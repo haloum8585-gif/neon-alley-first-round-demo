@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b16">
+<title>Neon Alley — Taekwondo Championship</title>
+<style>
+  :root{color-scheme:dark;--ink:#f4f4ff;--muted:#aab0c9;--cyan:#39f5df;--pink:#ff3d9a;--gold:#ffd166;--panel:#111528}
+  *{box-sizing:border-box}
+  html{min-width:300px;background:#070914}
+  body{margin:0;min-height:100vh;padding:clamp(14px,3vw,34px);display:grid;place-items:center;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 50% -12%,#27214b 0,transparent 56%),radial-gradient(ellipse at 100% 80%,#102b39 0,transparent 44%),#070914}
+  .game{width:min(1120px,100%)}
+  .masthead{display:flex;justify-content:space-between;align-items:end;gap:18px;margin:0 2px 14px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid #39f5df88;border-radius:12px;color:var(--cyan);font-size:23px;text-shadow:0 0 18px #39f5df;box-shadow:inset 0 0 20px #39f5df18,0 0 22px #39f5df18;transform:rotate(-5deg)}
+  h1{margin:0;font-size:clamp(20px,3vw,30px);line-height:1;letter-spacing:.055em;text-transform:uppercase}
+  .subtitle{margin:5px 0 0;color:#aeb5d2;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+  .round-tag{padding:8px 12px;border:1px solid #ffffff1b;border-radius:999px;background:#ffffff08;color:#c3c9df;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+  .arena-wrap{position:relative;overflow:hidden;border:1px solid #7b80ba59;border-radius:16px;background:#080b16;box-shadow:0 24px 80px #0009,0 0 36px #5937ff1b,inset 0 1px #ffffff20}
+  canvas{display:block;width:100%;height:auto;aspect-ratio:1000/562;touch-action:none}
+  .result,.setup{position:absolute;inset:0;display:grid;place-items:center;padding:18px;background:#060814bd;backdrop-filter:blur(6px);opacity:1;transition:opacity .2s}
+  .result[hidden],.setup[hidden]{display:none}
+  .result-card,.setup-card{width:min(430px,96%);max-height:100%;overflow:auto;padding:clamp(20px,4vw,30px) 24px 24px;border:1px solid #ffffff30;border-radius:18px;background:linear-gradient(145deg,#171a31f5,#0b0e1df5);text-align:center;box-shadow:0 18px 70px #000a,0 0 40px #39f5df1c}
+  .result-kicker{margin:0 0 10px;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase}
+  .result h2{margin:0;font-size:clamp(34px,7vw,54px);line-height:1;letter-spacing:.07em;text-transform:uppercase;text-shadow:0 0 24px currentColor}
+  .setup h2{margin:0;font-size:clamp(27px,5vw,38px);line-height:1;letter-spacing:.04em;text-transform:uppercase}
+  .result p{margin:12px 0 20px;color:#c1c5da;font-size:14px}
+  .setup-intro{margin:9px 0 19px;color:#c1c5da;font-size:13px;line-height:1.5}
+  .setup-label{display:block;margin:0 0 7px;color:#dce2fa;text-align:left;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+  .name-input,.language-select{width:100%;height:46px;margin-bottom:16px;padding:0 13px;border:1px solid #ffffff32;border-radius:9px;outline:none;color:#f6f7ff;background:#090c1b;font:600 15px system-ui,sans-serif}
+  .name-input:focus,.language-select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #39f5df22}.gender-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 20px}
+  .gender-choice{height:45px;border:1px solid #ffffff2a;border-radius:9px;color:#dce2fa;background:#ffffff09;font:700 13px system-ui,sans-serif;cursor:pointer}
+  .gender-choice[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan);background:#39f5df13;box-shadow:inset 0 0 18px #39f5df0b}
+  .announcer{color:var(--gold)!important;font-weight:700;letter-spacing:.03em}
+  .restart{min-height:48px;padding:0 22px;border:0;border-radius:10px;color:#081018;background:linear-gradient(100deg,var(--cyan),#a8ffe9);font:800 13px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 24px #39f5df53;transition:transform .15s,filter .15s}
+  .restart:hover{transform:translateY(-2px);filter:brightness(1.08)}.restart:active{transform:translateY(1px)}.restart:focus-visible,.touch button:focus-visible{outline:3px solid white;outline-offset:3px}
+  .gender-choice:focus-visible,.name-input:focus-visible,.language-select:focus-visible{outline:3px solid #39f5df;outline-offset:2px}
+  .touch{display:none;justify-content:space-between;align-items:center;gap:14px;padding:14px 6px 2px;user-select:none;-webkit-user-select:none;touch-action:none}
+  .touch-group{display:flex;align-items:center;gap:8px}
+  .touch button{width:48px;height:48px;display:grid;place-items:center;border:1px solid #ffffff29;border-radius:14px;color:#e9eeff;background:linear-gradient(145deg,#20243a,#111426);font:700 19px system-ui,sans-serif;box-shadow:0 5px 15px #0006;touch-action:none;user-select:none;-webkit-user-select:none}
+  .touch button[data-action="punch"]{color:#081018;background:linear-gradient(145deg,#78fff0,#2adccf);border-color:#9ffff3}.touch button[data-action="kick"]{color:#fff;background:linear-gradient(145deg,#ff65ab,#db287e);border-color:#ff9bc8}
+  .touch button[data-action="block"]{font-size:12px;color:#ffe9a6}.touch button[aria-pressed="true"]{transform:translateY(2px);filter:brightness(1.3);box-shadow:0 0 18px #39f5df5c}
+  .instructions{display:flex;justify-content:space-between;gap:18px;align-items:center;margin:13px 3px 0;color:#9da5c0;font-size:12px}
+  .keys{display:flex;flex-wrap:wrap;gap:8px 13px}.key-item{white-space:nowrap}.key{display:inline-grid;min-width:23px;height:22px;place-items:center;margin-right:4px;padding:0 5px;border:1px solid #ffffff24;border-bottom-width:2px;border-radius:6px;background:#ffffff09;color:#eef2ff;font-size:10px;font-weight:750}
+  .tip{color:#727b9a;text-align:right}
+  @media(max-width:640px){body{padding:14px 10px}.masthead{align-items:center}.round-tag{font-size:9px;padding:7px 9px}.mark{width:36px;height:36px}.subtitle{font-size:10px}.touch{display:flex}.instructions{align-items:flex-start;flex-direction:column;gap:8px;font-size:11px}.tip{text-align:left}.keys{gap:7px 10px}.result,.setup{position:fixed;z-index:20;padding:12px}.result-card,.setup-card{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)}}
+  @media(max-width:380px){.touch button{width:40px;height:44px;border-radius:12px}.touch{gap:4px;padding:10px 2px 2px}.touch-group{gap:4px}.round-tag{display:none}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="game">
+  <header class="masthead">
+    <div class="brand"><div class="mark" aria-hidden="true">✦</div><div><h1>Neon Alley</h1><p class="subtitle" data-i18n="subtitle">Taekwondo hands &amp; kicks · neon street championship</p></div></div>
+    <div class="round-tag" data-i18n="tagline">◆ &nbsp; 10 stages · 2 rounds per match</div>
+  </header>
+  <section class="arena-wrap" aria-label="Neon Alley fighting game" data-i18n-aria="arenaLabel">
+    <canvas id="game" width="1000" height="562" role="img" aria-label="A neon street fighting game. Use the arrow keys to move and jump, J to punch, K to kick, and C to block." data-i18n-aria="canvasLabel"></canvas>
+    <div class="result" id="result" hidden aria-live="assertive">
+      <div class="result-card"><p class="result-kicker" id="result-kicker">Round complete</p><h2 id="result-title">Victory</h2><p id="result-copy">Well done.</p><p class="announcer" id="announcer-caption"></p><button class="restart" id="restart" type="button">Continue</button></div>
+    </div>
+    <div class="setup" id="setup" aria-label="Choose your fighter" data-i18n-aria="setupLabel">
+      <form class="setup-card" id="setup-form">
+        <p class="result-kicker" data-i18n="setupKicker">Alley championship</p><h2 data-i18n="setupTitle">Choose your fighter</h2>
+        <p class="setup-intro" data-i18n="setupIntro">Choose your name and fighter. Each match has two rounds. Win the match to climb through the stages and claim the trophy in the grand final.</p>
+        <label class="setup-label" for="fighter-name" data-i18n="nameLabel">Fighter name</label>
+        <input class="name-input" id="fighter-name" name="fighter-name" maxlength="18" autocomplete="nickname" placeholder="Type your name" data-i18n-placeholder="namePlaceholder" required autofocus>
+        <label class="setup-label" for="language-select" data-i18n="languageLabel">Language</label>
+        <select class="language-select" id="language-select"><option value="en" data-i18n="lang_en">English</option><option value="fr" data-i18n="lang_fr">Français</option><option value="es" data-i18n="lang_es">Español</option></select>
+        <span class="setup-label" data-i18n="characterLabel">Choose your character</span>
+        <div class="gender-options" role="group" aria-label="Choose male or female" data-i18n-aria="genderGroup"><button class="gender-choice" type="button" data-gender="homme" aria-pressed="true"><span aria-hidden="true">♂ &nbsp;</span><span data-i18n="man">Man</span></button><button class="gender-choice" type="button" data-gender="femme" aria-pressed="false"><span aria-hidden="true">♀ &nbsp;</span><span data-i18n="woman">Woman</span></button></div>
+        <button class="restart" type="submit" data-i18n="startChampionship">Enter the championship &nbsp; →</button>
+      </form>
+    </div>
+  </section>
+  <nav class="touch" aria-label="Touch controls" data-i18n-aria="touchLabel">
+    <div class="touch-group"><button type="button" data-action="left" aria-label="Move left" data-i18n-aria="leftLabel">◀</button><button type="button" data-action="right" aria-label="Move right" data-i18n-aria="rightLabel">▶</button><button type="button" data-action="jump" aria-label="Jump" data-i18n-aria="jumpLabel">⬆</button></div>
+    <div class="touch-group"><button type="button" data-action="block" aria-label="Block" data-i18n-aria="blockLabel" aria-pressed="false"><span data-i18n="blockButton">GUARD</span></button><button type="button" data-action="punch" aria-label="Punch" data-i18n-aria="punchLabel">✊</button><button type="button" data-action="kick" aria-label="Kick" data-i18n-aria="kickLabel">🦶</button></div>
+  </nav>
+  <footer class="instructions">
+    <div class="keys"><span class="key-item"><span class="key">←</span><span class="key">→</span> <span data-i18n="move">move</span></span><span class="key-item"><span class="key">↑</span> <span data-i18n="jump">jump</span></span><span class="key-item"><span class="key">J</span> <span data-i18n="punches">fists · jab / cross</span></span><span class="key-item"><span class="key">K</span> <span data-i18n="kicks">taekwondo kicks</span></span><span class="key-item"><span class="key">C</span> <span data-i18n="block">block</span></span></div>
+    <span class="tip" data-i18n="controlsTip">J alternates punches; K cycles through front, roundhouse and side kicks.</span>
+  </footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const resultLayer = document.getElementById('result');
+  const setupLayer = document.getElementById('setup');
+  const setupForm = document.getElementById('setup-form');
+  const nameInput = document.getElementById('fighter-name');
+  const resultTitle = document.getElementById('result-title');
+  const resultCopy = document.getElementById('result-copy');
+  const resultKicker = document.getElementById('result-kicker');
+  const announcerCaption = document.getElementById('announcer-caption');
+  const restartButton = document.getElementById('restart');
+  const genderButtons = [...document.querySelectorAll('.gender-choice')];
+  const languageSelect = document.getElementById('language-select');
+  const W = 1000, H = 562, FLOOR = 444, DEMO_MODE = true;
+  const held = new Set(), pressed = new Set();
+  const touchButtons = [...document.querySelectorAll('.touch button')];
+  const player = {};
+  const enemy = {};
+  const translations={
+    en:{docTitle:'Neon Alley — Taekwondo Championship',subtitle:'Taekwondo hands & kicks · neon street championship',tagline:'◆   10 stages · 2 rounds per match',arenaLabel:'Neon Alley fighting game',canvasLabel:'A neon taekwondo fighting game. Use the arrow keys to move and jump, J to punch, K to kick, and C to block.',
+      resultKicker:'Round complete',resultTitle:'Victory',resultCopy:'Well done.',continue:'Continue',setupLabel:'Choose your fighter',setupKicker:'Alley championship',setupTitle:'Choose your fighter',setupIntro:'Choose your name and fighter. Each match has two rounds. Win the match to climb through the stages and claim the trophy in the grand final.',nameLabel:'Fighter name',namePlaceholder:'Type your name',languageLabel:'Language',characterLabel:'Choose your character',genderGroup:'Choose man or woman',man:'Man',woman:'Woman',startChampionship:'Enter the championship  →',
+      touchLabel:'Touch controls',leftLabel:'Move left',rightLabel:'Move right',jumpLabel:'Jump',blockLabel:'Block',punchLabel:'Punch',kickLabel:'Kick',move:'move',jump:'jump',punches:'fists · jab / cross',kicks:'taekwondo kicks',block:'block',blockButton:'GUARD',controlsTip:'J alternates punches; K cycles through front, roundhouse and side kicks.',
+      rank_white:'WHITE',rank_yellow:'YELLOW',rank_green:'GREEN',rank_blue:'BLUE',rank_red:'RED',rank_black:'BLACK',score:'SCORE',championship:'CHAMPIONSHIP',guardUp:'GUARD UP',ready:'READY?',fight:'FIGHT!',announcer:'ANNOUNCER',level:'Stage',round:'Round',vs:'versus',fightSpeech:'Fight!',open24:'OPEN 24H',moveJab:'JAB',moveCross:'CROSS',moveFront:'FRONT KICK',moveRoundhouse:'ROUNDHOUSE',moveSideKick:'SIDE KICK',guardHit:'GUARD',nice:'NICE!',
+      roundStart:'Round {round}! Stage {stage}. {player} versus {rival}. Fight!',roundWinAnnounce:'{name} wins round {round}!',roundLoseAnnounce:'{name} takes round {round}.',roundKicker:'STAGE {stage} / 10 · ROUND 1 / 2',roundWinTitle:'Round won!',roundLoseTitle:'Round lost!',roundScoreCopy:'{player} {playerWins} — {rival} {rivalWins}. Health is restored for the second round.',startRound2:'Start round 2',
+      championKicker:'GRAND FINAL · STAGE 10',championMale:'🏆 Champion!',championFemale:'🏆 Champion!',championCopy:'{player} wins the championship with {score} points. The trophy is yours!',replayChampionship:'Replay championship',championSpeechMale:'{player}, you are the champion! You win the trophy!',championSpeechFemale:'{player}, you are the champion! You win the trophy!',stageKicker:'STAGE {stage} · COMPLETE',stageWonTitle:'Stage {stage} won!',stageWonCopy:'{player} defeated {rival}. Both rounds are complete. The next opponent awaits.',nextStage:'Go to stage {stage}',nextStageSpeech:'{player} wins stage {stage} and advances!',eliminationKicker:'STAGE {stage} · ELIMINATION',rivalWins:'Your rival wins',eliminationCopy:'{rival} won both rounds. Replay this stage to continue the championship.',replayStage:'Replay stage {stage}',eliminationSpeech:'{rival} wins stage {stage}.',
+      hudStageRound:'STAGE {stage} / 10 · ROUND {round} / 2',comboHits:'COMBO ×{combo}',lang_en:'English',lang_fr:'French',lang_es:'Spanish',demoDocTitle:'Neon Alley — First-round demo',demoTagline:'◆   PLAYABLE DEMO · FIRST ROUND',demoSetupKicker:'Quick playable demo',demoSetupIntro:'Try the opening round of the taekwondo championship. Choose a name and fighter, then battle Malik Iron in a single round.',startDemo:'Play the first round  →',demoHud:'DEMO · ROUND 1 ONLY',demoKicker:'DEMO COMPLETE · ROUND 1',demoWinTitle:'You win!',demoLoseTitle:'Round over',demoWinCopy:'{player} won the opening round against {rival} with {score} points. Replay the demo or try the full championship.',demoLoseCopy:'{rival} won the opening round. Replay the demo or try the full championship.',replayDemo:'Replay demo',demoWinSpeech:'{player} wins the opening round! That is the end of this demo.',demoLoseSpeech:'{rival} wins the opening round. That is the end of this demo.'},
+    fr:{docTitle:'Neon Alley — Championnat de taekwondo',subtitle:'Poings et pieds · championnat de rue',tagline:'◆   10 niveaux · 2 rounds par duel',arenaLabel:'Jeu de combat Neon Alley',canvasLabel:'Jeu de combat de taekwondo. Flèches pour bouger et sauter, J pour les poings, K pour les pieds, C pour bloquer.',
+      resultKicker:'Fin du round',resultTitle:'Victoire',resultCopy:'Bien joué.',continue:'Continuer',setupLabel:'Choisis ton combattant',setupKicker:'Championnat de l’allée',setupTitle:'À toi de jouer',setupIntro:'Choisis ton nom et ton personnage. Chaque duel se joue en deux rounds. Gagne le match pour gravir les niveaux et décrocher le trophée au grand final.',nameLabel:'Nom du combattant',namePlaceholder:'Écris ton nom',languageLabel:'Langue',characterLabel:'Choisis ton personnage',genderGroup:'Choisis homme ou femme',man:'Homme',woman:'Femme',startChampionship:'Entrer dans le championnat  →',
+      touchLabel:'Commandes tactiles',leftLabel:'Aller à gauche',rightLabel:'Aller à droite',jumpLabel:'Sauter',blockLabel:'Bloquer',punchLabel:'Donner un coup de poing',kickLabel:'Donner un coup de pied',move:'bouger',jump:'sauter',punches:'poings · jab / croisé',kicks:'coups de pied taekwondo',block:'bloquer',blockButton:'GARDE',controlsTip:'J alterne jab et croisé ; K enchaîne coup frontal, circulaire et latéral.',
+      rank_white:'BLANCHE',rank_yellow:'JAUNE',rank_green:'VERTE',rank_blue:'BLEUE',rank_red:'ROUGE',rank_black:'NOIRE',score:'SCORE',championship:'CHAMPIONNAT',guardUp:'GARDE HAUTE',ready:'PRÊT ?',fight:'COMBATTEZ !',announcer:'ANIMATEUR',level:'Niveau',round:'Round',vs:'contre',fightSpeech:'Combattez !',open24:'OUVERT 24H',moveJab:'JAB',moveCross:'CROISÉ',moveFront:'FRONTAL',moveRoundhouse:'CIRCULAIRE',moveSideKick:'LATÉRAL',guardHit:'GARDE',nice:'BIEN JOUÉ !',
+      roundStart:'Round {round} ! Niveau {stage}. {player} contre {rival}. Combattez !',roundWinAnnounce:'{name} gagne le round {round} !',roundLoseAnnounce:'{name} remporte le round {round}.',roundKicker:'NIVEAU {stage} / 10 · ROUND 1 / 2',roundWinTitle:'Round gagné !',roundLoseTitle:'Round perdu',roundScoreCopy:'{player} {playerWins} — {rival} {rivalWins}. La santé revient au maximum pour le deuxième round.',startRound2:'Lancer le round 2',
+      championKicker:'GRAND FINAL · NIVEAU 10',championMale:'🏆 Champion !',championFemale:'🏆 Championne !',championCopy:'{player} remporte le championnat avec {score} points. Le trophée est à toi !',replayChampionship:'Rejouer le championnat',championSpeechMale:'{player}, tu es champion ! Tu remportes le trophée !',championSpeechFemale:'{player}, tu es championne ! Tu remportes le trophée !',stageKicker:'NIVEAU {stage} · TERMINÉ',stageWonTitle:'Niveau {stage} gagné !',stageWonCopy:'{player} a battu {rival}. Les deux rounds sont terminés. Le prochain adversaire t’attend.',nextStage:'Passer au niveau {stage}',nextStageSpeech:'{player} gagne le niveau {stage} et passe au suivant !',eliminationKicker:'NIVEAU {stage} · ÉLIMINATION',rivalWins:'Le rival gagne',eliminationCopy:'{rival} remporte les deux rounds. Rejoue ce niveau pour continuer le championnat.',replayStage:'Rejouer le niveau {stage}',eliminationSpeech:'{rival} remporte le niveau {stage}.',
+      hudStageRound:'NIVEAU {stage} / 10 · ROUND {round} / 2',comboHits:'COMBO ×{combo}',lang_en:'Anglais',lang_fr:'Français',lang_es:'Espagnol',demoDocTitle:'Neon Alley — Démo du premier round',demoTagline:'◆   DÉMO JOUABLE · PREMIER ROUND',demoSetupKicker:'Démo jouable',demoSetupIntro:'Essaie le premier round du championnat de taekwondo. Choisis ton nom et ton personnage, puis affronte Malik Iron dans un seul round.',startDemo:'Jouer le premier round  →',demoHud:'DÉMO · ROUND 1 SEULEMENT',demoKicker:'DÉMO TERMINÉE · ROUND 1',demoWinTitle:'Tu as gagné !',demoLoseTitle:'Round terminé',demoWinCopy:'{player} a gagné le premier round contre {rival} avec {score} points. Rejoue la démo ou découvre le championnat complet.',demoLoseCopy:'{rival} a gagné le premier round. Rejoue la démo ou découvre le championnat complet.',replayDemo:'Rejouer la démo',demoWinSpeech:'{player} gagne le premier round ! La démo est terminée.',demoLoseSpeech:'{rival} gagne le premier round. La démo est terminée.'},
+    es:{docTitle:'Neon Alley — Campeonato de taekwondo',subtitle:'Puños y patadas · campeonato callejero',tagline:'◆   10 niveles · 2 asaltos por combate',arenaLabel:'Juego de lucha Neon Alley',canvasLabel:'Juego de lucha de taekwondo. Usa las flechas para moverte y saltar, J para puñetazos, K para patadas y C para bloquear.',
+      resultKicker:'Fin del asalto',resultTitle:'Victoria',resultCopy:'¡Buen trabajo!',continue:'Continuar',setupLabel:'Elige a tu luchador',setupKicker:'Campeonato del callejón',setupTitle:'Elige a tu luchador',setupIntro:'Elige tu nombre y personaje. Cada combate tiene dos asaltos. Gana el combate para avanzar de nivel y conseguir el trofeo en la gran final.',nameLabel:'Nombre del luchador',namePlaceholder:'Escribe tu nombre',languageLabel:'Idioma',characterLabel:'Elige tu personaje',genderGroup:'Elige hombre o mujer',man:'Hombre',woman:'Mujer',startChampionship:'Entrar al campeonato  →',
+      touchLabel:'Controles táctiles',leftLabel:'Mover a la izquierda',rightLabel:'Mover a la derecha',jumpLabel:'Saltar',blockLabel:'Bloquear',punchLabel:'Puñetazo',kickLabel:'Patada',move:'mover',jump:'saltar',punches:'puños · jab / cruzado',kicks:'patadas de taekwondo',block:'bloquear',blockButton:'GUARDIA',controlsTip:'J alterna jab y cruzado; K alterna patada frontal, circular y lateral.',
+      rank_white:'BLANCO',rank_yellow:'AMARILLO',rank_green:'VERDE',rank_blue:'AZUL',rank_red:'ROJO',rank_black:'NEGRO',score:'PUNTOS',championship:'CAMPEONATO',guardUp:'GUARDIA ALTA',ready:'¿LISTO?',fight:'¡A LUCHAR!',announcer:'LOCUTOR',level:'Nivel',round:'Asalto',vs:'contra',fightSpeech:'¡A luchar!',open24:'ABIERTO 24H',moveJab:'JAB',moveCross:'CRUZADO',moveFront:'FRONTAL',moveRoundhouse:'CIRCULAR',moveSideKick:'LATERAL',guardHit:'BLOQUEO',nice:'¡BIEN!',
+      roundStart:'¡Asalto {round}! Nivel {stage}. {player} contra {rival}. ¡A luchar!',roundWinAnnounce:'¡{name} gana el asalto {round}!',roundLoseAnnounce:'{name} se lleva el asalto {round}.',roundKicker:'NIVEL {stage} / 10 · ASALTO 1 / 2',roundWinTitle:'¡Asalto ganado!',roundLoseTitle:'Asalto perdido',roundScoreCopy:'{player} {playerWins} — {rival} {rivalWins}. La salud se recupera para el segundo asalto.',startRound2:'Empezar asalto 2',
+      championKicker:'GRAN FINAL · NIVEL 10',championMale:'🏆 ¡Campeón!',championFemale:'🏆 ¡Campeona!',championCopy:'{player} gana el campeonato con {score} puntos. ¡El trofeo es tuyo!',replayChampionship:'Repetir campeonato',championSpeechMale:'¡{player}, eres el campeón! ¡Ganas el trofeo!',championSpeechFemale:'¡{player}, eres la campeona! ¡Ganas el trofeo!',stageKicker:'NIVEL {stage} · COMPLETADO',stageWonTitle:'¡Nivel {stage} ganado!',stageWonCopy:'{player} venció a {rival}. Terminaron los dos asaltos. Te espera el siguiente rival.',nextStage:'Ir al nivel {stage}',nextStageSpeech:'¡{player} gana el nivel {stage} y avanza!',eliminationKicker:'NIVEL {stage} · ELIMINACIÓN',rivalWins:'Gana tu rival',eliminationCopy:'{rival} ganó los dos asaltos. Repite este nivel para continuar el campeonato.',replayStage:'Repetir nivel {stage}',eliminationSpeech:'{rival} gana el nivel {stage}.',
+      hudStageRound:'NIVEL {stage} / 10 · ASALTO {round} / 2',comboHits:'COMBO ×{combo}',lang_en:'Inglés',lang_fr:'Francés',lang_es:'Español',demoDocTitle:'Neon Alley — Demo del primer asalto',demoTagline:'◆   DEMO JUGABLE · PRIMER ASALTO',demoSetupKicker:'Demo jugable',demoSetupIntro:'Prueba el primer asalto del campeonato de taekwondo. Elige tu nombre y personaje, y lucha contra Malik Iron en un solo asalto.',startDemo:'Jugar el primer asalto  →',demoHud:'DEMO · SOLO ASALTO 1',demoKicker:'DEMO COMPLETADA · ASALTO 1',demoWinTitle:'¡Has ganado!',demoLoseTitle:'Asalto terminado',demoWinCopy:'{player} ganó el primer asalto contra {rival} con {score} puntos. Repite la demo o prueba el campeonato completo.',demoLoseCopy:'{rival} ganó el primer asalto. Repite la demo o prueba el campeonato completo.',replayDemo:'Repetir demo',demoWinSpeech:'¡{player} gana el primer asalto! Aquí termina la demo.',demoLoseSpeech:'{rival} gana el primer asalto. Aquí termina la demo.'}
+  };
+  let language='en';
+  const tr=key=>translations[language][key]||translations.en[key]||key;
+  const fmt=(key,values={})=>tr(key).replace(/\{(\w+)\}/g,(_,name)=>values[name]??'');
+  function applyLanguage(){
+    document.documentElement.lang=language;document.title=tr(DEMO_MODE?'demoDocTitle':'docTitle');languageSelect.value=language;
+    document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n);});
+    document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',tr(el.dataset.i18nAria)));
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.setAttribute('placeholder',tr(el.dataset.i18nPlaceholder)));
+    genderButtons.forEach(button=>{const label=button.querySelector('[data-i18n]');if(label)label.textContent=tr(label.dataset.i18n);});
+    if(DEMO_MODE){document.querySelector('.round-tag').textContent=tr('demoTagline');document.querySelector('.setup-intro').textContent=tr('demoSetupIntro');document.querySelector('[data-i18n="setupKicker"]').textContent=tr('demoSetupKicker');document.querySelector('[data-i18n="startChampionship"]').textContent=tr('startDemo');}
+    if(gameState!=='fight')draw();
+  }
+  languageSelect.addEventListener('change',()=>{language=translations[languageSelect.value]?languageSelect.value:'en';applyLanguage();});
+  const opponents=[
+    {name:'MALIK IRON',gender:'homme',rank:'yellow',belt:'#eac94e',accent:'#e7b84a',skin:'#bd8161'},
+    {name:'HANA KIM',gender:'femme',rank:'green',belt:'#38b889',accent:'#43d9ae',skin:'#f0c39a'},
+    {name:'DIEGO CRUZ',gender:'homme',rank:'blue',belt:'#438de0',accent:'#72b3ff',skin:'#bd815d'},
+    {name:'LEÏLA STORM',gender:'femme',rank:'red',belt:'#cf4549',accent:'#ff777c',skin:'#9b634c'},
+    {name:'KENJI WOLF',gender:'homme',rank:'black',belt:'#282b36',accent:'#ac9cff',skin:'#edc6a4'},
+    {name:'NORA BLAZE',gender:'femme',rank:'black',belt:'#252530',accent:'#ff65a4',skin:'#c58b6c'},
+    {name:'IDRISS PHANTOM',gender:'homme',rank:'black',belt:'#181b26',accent:'#53c4ed',skin:'#81543f'},
+    {name:'MEI DRAGON',gender:'femme',rank:'black',belt:'#1d202a',accent:'#fa8064',skin:'#f0c39a'},
+    {name:'RAYAN STEEL',gender:'homme',rank:'black',belt:'#11131c',accent:'#afc1dc',skin:'#a66b50'},
+    {name:'SAMIRA TITAN',gender:'femme',rank:'black',belt:'#080910',accent:'#ffe27a',skin:'#bf8162'}
+  ];
+  let particles = [], labels = [], elapsed = 0, timeLeft = 60, score = 0, combo = 0, comboAge = 0;
+  let ended = true, intro = 1.1, shake = 0, hitStop = 0, lastFrame = 0, soundContext = null;
+  let playerName='', playerGender='homme', stage=1, roundNumber=1, stagePlayerWins=0, stageEnemyWins=0;
+  let stagePlayerDamage=0, stageEnemyDamage=0, gameState='setup', resultAction=null, voiceCaption='',voiceLine='';
+  let randomSeed = 4129;
+  const rand = () => { randomSeed = (randomSeed * 1664525 + 1013904223) >>> 0; return randomSeed / 4294967296; };
+
+  function resizeCanvas(){
+    const r = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
+    if(gameState!=='fight')requestAnimationFrame(draw);
+  }
+  new ResizeObserver(resizeCanvas).observe(canvas); resizeCanvas();
+
+  function makeFighter(x,playerSide,identity={}){
+    const gi=identity.gi||'#edf1f5',accent=identity.accent||(playerSide?'#39f5df':'#ff3d9a');
+    return {x,y:0,vx:0,vy:0,hp:100,maxHp:100,facing:playerSide?1:-1,attack:null,stun:0,invuln:0,aiWait:.55,
+      guard:false,playerSide,hitFlash:0,walk:0,punchCount:0,kickCount:0,body:gi,gi,trim:identity.trim||accent,belt:identity.belt||(playerSide?'#f5f3eb':'#11131c'),
+      skin:identity.skin||'#c88e6e',hair:identity.hair||'#24202a',gender:identity.gender||(playerSide?playerGender:'homme'),rank:identity.rank||'white',
+      name:identity.name||(playerSide?playerName:'VEX'),accent};
+  }
+  function speak(text){
+    voiceLine=text;voiceCaption=`${tr('announcer')}: “${text}”`;announcerCaption.textContent=voiceCaption;
+    try{if('speechSynthesis' in window){window.speechSynthesis.cancel();const msg=new SpeechSynthesisUtterance(text);msg.lang={en:'en-US',fr:'fr-FR',es:'es-ES'}[language];msg.rate=.91;msg.pitch=.95;window.speechSynthesis.speak(msg);}}catch(_){/* Visual announcer captions remain available without speech. */}
+  }
+  function enableSound(){try{soundContext ||= new (window.AudioContext||window.webkitAudioContext)();if(soundContext.state==='suspended')soundContext.resume();}catch(_){/* Sound effects are optional on unsupported browsers. */}}
+  function beginRound(){
+    const rival=opponents[stage-1],ranks=['white','yellow','green','blue','red','black'],rankIndex=Math.min(5,Math.floor((stage-1)*6/10));
+    const playerBelts=['#d9dce0','#eac94e','#38b889','#438de0','#cf4549','#181b26'];
+    Object.assign(player,makeFighter(318,true,{name:playerName,gender:playerGender,rank:ranks[rankIndex],gi:'#f1f4f6',belt:playerBelts[rankIndex],accent:'#39f5df',hair:playerGender==='femme'?'#211c27':'#30231d',skin:'#c89170'}));
+    Object.assign(enemy,makeFighter(690,false,rival));
+    player.maxHp=100;player.hp=100;enemy.maxHp=88+stage*4;enemy.hp=enemy.maxHp;
+    enemy.aiWait=Math.max(.35,.8-stage*.035)+rand()*.25;
+    timeLeft=60;combo=0;comboAge=0;elapsed=0;intro=1.15;particles=[];labels=[];ended=false;gameState='fight';shake=0;hitStop=0;
+    resultLayer.hidden=true;setupLayer.hidden=true;touchButtons.forEach(b=>b.setAttribute('aria-pressed','false'));held.clear();pressed.clear();
+    speak(fmt('roundStart',{round:roundNumber,stage,player:playerName,rival:rival.name}));
+    lastFrame=performance.now();requestAnimationFrame(frame);
+  }
+  function startChampionship(name,gender){
+    enableSound();playerName=name.trim().slice(0,18);playerGender=gender;stage=1;roundNumber=1;stagePlayerWins=0;stageEnemyWins=0;
+    stagePlayerDamage=0;stageEnemyDamage=0;score=0;gameState='fight';beginRound();
+  }
+  function keyName(e){
+    if(e.key.startsWith('Arrow')) return e.key;
+    if(e.key===' '||e.key==='Spacebar') return 'jump';
+    return e.key.toLowerCase();
+  }
+  function down(key){ if(!held.has(key)) pressed.add(key); held.add(key); }
+  window.addEventListener('keydown', e=>{
+    const key=keyName(e);
+    if(['ArrowLeft','ArrowRight','ArrowUp','j','k','c',' '].includes(e.key)||['j','k','c','jump'].includes(key)) e.preventDefault();
+    if(key==='Enter'&&ended&&resultAction&&!e.repeat){e.preventDefault();resultAction();return;}
+    down(key);
+  },{passive:false});
+  window.addEventListener('keyup', e=>held.delete(keyName(e)));
+  window.addEventListener('blur',()=>{held.clear();pressed.clear();touchButtons.forEach(b=>b.setAttribute('aria-pressed','false'));});
+  touchButtons.forEach(button=>{
+    const action=button.dataset.action;
+    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);down(action);if(action==='block')button.setAttribute('aria-pressed','true');});
+    const release=e=>{e.preventDefault();held.delete(action);if(action==='block')button.setAttribute('aria-pressed','false');};
+    button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',()=>{held.delete(action);if(action==='block')button.setAttribute('aria-pressed','false');});
+  });
+  genderButtons.forEach(button=>button.addEventListener('click',()=>{playerGender=button.dataset.gender;genderButtons.forEach(item=>item.setAttribute('aria-pressed',String(item===button)));}));
+  setupForm.addEventListener('submit',e=>{e.preventDefault();if(!nameInput.value.trim()){nameInput.focus();return;}startChampionship(nameInput.value,playerGender);});
+  restartButton.addEventListener('click',()=>{if(resultAction)resultAction();});
+
+  const ATTACK={
+    jab:{type:'punch',label:'moveJab',startup:.075,active:.12,recover:.22,reach:82,damage:6,points:100},
+    cross:{type:'punch',label:'moveCross',startup:.13,active:.14,recover:.29,reach:91,damage:8,points:125},
+    frontKick:{type:'kick',label:'moveFront',startup:.16,active:.21,recover:.34,reach:118,damage:10,points:155},
+    roundhouse:{type:'kick',label:'moveRoundhouse',startup:.22,active:.23,recover:.43,reach:136,damage:13,points:195},
+    sideKick:{type:'kick',label:'moveSideKick',startup:.19,active:.22,recover:.40,reach:146,damage:12,points:180}
+  };
+  const attackSequences={punch:['jab','cross'],kick:['frontKick','roundhouse','sideKick']};
+  function startAttack(f,type){
+    if(f.attack||f.stun>0)return;
+    const n=f[`${type}Count`]||0,move=attackSequences[type][n%attackSequences[type].length];f[`${type}Count`]=n+1;
+    const s=ATTACK[move];f.attack={type,move,t:0,hit:false,total:s.startup+s.active+s.recover};
+    labels.push({x:f.x,y:FLOOR-f.y-144,text:tr(s.label),life:.46,color:f.accent});sound(type==='punch'?190:115,.035,'square');
+  }
+  function sound(freq,duration,wave='sine'){
+    try{soundContext ||= new (window.AudioContext||window.webkitAudioContext)();if(soundContext.state==='suspended')soundContext.resume();const o=soundContext.createOscillator(),g=soundContext.createGain();o.type=wave;o.frequency.setValueAtTime(freq,soundContext.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.46),soundContext.currentTime+duration);g.gain.setValueAtTime(.035,soundContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,soundContext.currentTime+duration);o.connect(g).connect(soundContext.destination);o.start();o.stop(soundContext.currentTime+duration);}catch(_){/* The game remains playable when audio is unavailable. */}
+  }
+  function isGrounded(f){return f.y<=0;}
+  function beginHit(target,attacker,attack){
+    const blocked=target.guard&&target.playerSide&&target.facing===(target.x<attacker.x?1:-1);
+    const baseDamage=attacker===enemy?Math.round(attack.damage*(1+(stage-1)*.055)):attack.damage;
+    const damage=blocked?Math.max(1,Math.ceil(baseDamage*.24)):baseDamage;
+    target.hp=Math.max(0,target.hp-damage);target.invuln=blocked?.16:.3;target.hitFlash=.12;target.stun=blocked?.07:.24;
+    target.vx=(target.x<attacker.x?-1:1)*(blocked?75:190);if(!blocked&&target.y===0)target.vy=65;
+    shake=blocked?3:7;hitStop=blocked?.025:.055;
+    burst((target.x+attacker.x)/2,FLOOR-target.y-73,blocked?'#ffe28b':'#fff2b2',blocked?8:15);
+    labels.push({x:target.x,y:FLOOR-target.y-122,text:blocked?tr('guardHit'):`-${damage}`,life:.72,color:blocked?'#ffe28b':'#fff2b2'});
+    sound(blocked?260:82,blocked?.055:.11,blocked?'triangle':'sawtooth');
+    if(target===enemy&&!blocked){comboAge=0;combo++;score+=attack.points+(combo>1?25*Math.min(4,combo-1):0);labels.push({x:target.x,y:FLOOR-target.y-150,text:combo>1?fmt('comboHits',{combo}):tr('nice'),life:.6,color:'#39f5df'});}
+    if(target===enemy&&enemy.hp<=0)finish('win');
+    else if(target===player&&player.hp<=0)finish('lose');
+  }
+  function tryResolve(attacker,target){
+    const a=attacker.attack;if(!a||a.hit)return;const s=ATTACK[a.move];
+    if(a.t>=s.startup&&a.t<=s.startup+s.active){
+      const horizontal=Math.abs(target.x-attacker.x), vertical=Math.abs(target.y-attacker.y);
+      if(horizontal<=s.reach+25&&vertical<72&&attacker.facing===(target.x>attacker.x?1:-1)&&target.invuln<=0){a.hit=true;beginHit(target,attacker,s);}
+    }
+  }
+  function playerUpdate(dt){
+    player.guard=held.has('c')||held.has('block');
+    if(player.stun<=0&&!ended){
+      const dir=(held.has('ArrowRight')||held.has('right')?1:0)-(held.has('ArrowLeft')||held.has('left')?1:0);
+      if(dir){player.vx=dir*(player.guard?125:255);player.facing=dir;player.walk+=dt*(player.guard?5:10);}else player.vx*=Math.pow(.0009,dt);
+      if((pressed.has('ArrowUp')||pressed.has('jump'))&&isGrounded(player)){player.vy=550;sound(260,.055,'triangle');}
+      if(pressed.has('j')||pressed.has('punch'))startAttack(player,'punch');
+      if(pressed.has('k')||pressed.has('kick'))startAttack(player,'kick');
+    }
+    moveFighter(player,dt);
+  }
+  function enemyUpdate(dt){
+    enemy.facing=enemy.x>player.x?-1:1;
+    if(enemy.stun<=0&&!enemy.attack&&!ended){
+      const dist=Math.abs(player.x-enemy.x), toward=player.x>enemy.x?1:-1;
+      if(dist>103){const pace=1+(stage-1)*.025;enemy.vx=toward*(dist>260?116:83)*pace;enemy.walk+=dt*6;}
+      else{enemy.vx*=Math.pow(.003,dt);enemy.aiWait-=dt;if(enemy.aiWait<=0&&intro<=0){startAttack(enemy,rand()<.55?'punch':'kick');enemy.aiWait=.77+rand()*.56;}}
+    }
+    moveFighter(enemy,dt);
+  }
+  function moveFighter(f,dt){
+    f.stun=Math.max(0,f.stun-dt);f.invuln=Math.max(0,f.invuln-dt);f.hitFlash=Math.max(0,f.hitFlash-dt);
+    if(f.attack){f.attack.t+=dt;if(f.attack.t>=f.attack.total)f.attack=null;}
+    f.x+=f.vx*dt;f.vx*=Math.pow(.018,dt);f.x=Math.max(55,Math.min(W-55,f.x));
+    f.y+=f.vy*dt;f.vy-=1450*dt;if(f.y<0){f.y=0;f.vy=0;}
+  }
+  function update(dt){
+    elapsed+=dt;timeLeft=Math.max(0,timeLeft-dt);intro=Math.max(0,intro-dt);comboAge+=dt;if(comboAge>2.2)combo=0;
+    playerUpdate(dt);enemyUpdate(dt);
+    if(Math.abs(enemy.x-player.x)<55){const center=(enemy.x+player.x)/2,order=enemy.x>player.x?1:-1;player.x=center-order*27;enemy.x=center+order*27;}
+    if(!ended){tryResolve(player,enemy);tryResolve(enemy,player);}
+    if(timeLeft<=0&&!ended)finish(player.hp/player.maxHp>=enemy.hp/enemy.maxHp?'win':'lose');
+    for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=320*dt;p.life-=dt;}
+    particles=particles.filter(p=>p.life>0);
+    for(const t of labels){t.y-=35*dt;t.life-=dt;}
+    labels=labels.filter(t=>t.life>0);shake=Math.max(0,shake-26*dt);
+    pressed.clear();
+  }
+  function showResult(kicker,title,copy,buttonText,action,color='#39f5df'){
+    resultKicker.textContent=kicker;resultTitle.textContent=title;resultTitle.style.color=color;resultCopy.textContent=copy;
+    announcerCaption.textContent=voiceCaption;restartButton.textContent=buttonText;resultAction=action;resultLayer.hidden=false;
+  }
+  function finish(outcome){
+    if(ended)return;ended=true;gameState='intermission';held.clear();
+    const wonRound=outcome==='win',rival=opponents[stage-1];
+    stagePlayerDamage+=enemy.maxHp-enemy.hp;stageEnemyDamage+=player.maxHp-player.hp;
+    if(wonRound)stagePlayerWins++;else stageEnemyWins++;
+    sound(wonRound?620:105,.22,wonRound?'triangle':'sawtooth');
+    if(DEMO_MODE){
+      speak(fmt(wonRound?'demoWinSpeech':'demoLoseSpeech',{player:playerName,rival:rival.name}));
+      showResult(tr('demoKicker'),tr(wonRound?'demoWinTitle':'demoLoseTitle'),
+        fmt(wonRound?'demoWinCopy':'demoLoseCopy',{player:playerName,rival:rival.name,score:score.toLocaleString({en:'en-US',fr:'fr-FR',es:'es-ES'}[language])}),
+        tr('replayDemo'),()=>startChampionship(playerName,playerGender),wonRound?'#39f5df':'#ff8ab8');
+      if(wonRound)burst(500,230,'#39f5df',28);
+      return;
+    }
+    if(roundNumber===1){
+      speak(fmt(wonRound?'roundWinAnnounce':'roundLoseAnnounce',{name:wonRound?playerName:rival.name,round:1}));
+      showResult(fmt('roundKicker',{stage}),tr(wonRound?'roundWinTitle':'roundLoseTitle'),
+        fmt('roundScoreCopy',{player:playerName,playerWins:stagePlayerWins,rival:rival.name,rivalWins:stageEnemyWins}),
+        tr('startRound2'),()=>{roundNumber=2;beginRound();},wonRound?'#39f5df':'#ff8ab8');
+      return;
+    }
+    const stageWon=stagePlayerWins>stageEnemyWins||(stagePlayerWins===stageEnemyWins&&stagePlayerDamage>=stageEnemyDamage);
+    if(stageWon&&stage===10){
+      const genderKey=playerGender==='femme'?'Female':'Male';
+      speak(fmt(`championSpeech${genderKey}`,{player:playerName}));
+      showResult(tr('championKicker'),tr(playerGender==='femme'?'championFemale':'championMale'),
+        fmt('championCopy',{player:playerName,score:score.toLocaleString({en:'en-US',fr:'fr-FR',es:'es-ES'}[language])}),
+        tr('replayChampionship'),()=>startChampionship(playerName,playerGender));
+      burst(500,230,'#ffd166',42);return;
+    }
+    if(stageWon){
+      speak(fmt('nextStageSpeech',{player:playerName,stage}));
+      showResult(fmt('stageKicker',{stage}),fmt('stageWonTitle',{stage}),
+        fmt('stageWonCopy',{player:playerName,rival:rival.name}),
+        fmt('nextStage',{stage:stage+1}),()=>{stage++;roundNumber=1;stagePlayerWins=0;stageEnemyWins=0;stagePlayerDamage=0;stageEnemyDamage=0;beginRound();});
+    }else{
+      speak(fmt('eliminationSpeech',{rival:rival.name,stage}));
+      showResult(fmt('eliminationKicker',{stage}),tr('rivalWins'),
+        fmt('eliminationCopy',{rival:rival.name}),
+        fmt('replayStage',{stage}),()=>{roundNumber=1;stagePlayerWins=0;stageEnemyWins=0;stagePlayerDamage=0;stageEnemyDamage=0;beginRound();},'#ff5b9f');
+    }
+  }
+  function burst(x,y,color,count){for(let i=0;i<count;i++){const a=rand()*Math.PI*2,s=70+rand()*290;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-30,life:.18+rand()*.34,max:.52,size:1.4+rand()*3.5,color});}}
+
+  function roundedRect(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}}
+  function background(){
+    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#080a18');sky.addColorStop(.58,'#171326');sky.addColorStop(1,'#321936');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#ff31591c';ctx.beginPath();ctx.arc(746,159,135,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff477044';ctx.beginPath();ctx.arc(746,159,72,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff9a9e';ctx.beginPath();ctx.arc(746,159,42,0,Math.PI*2);ctx.fill();
+    // Distant towers
+    for(let i=0;i<16;i++){const x=i*72-18,w=40+(i*31%30),h=110+(i*79%145),y=334-h;ctx.fillStyle=i%2?'#101326':'#121329';ctx.fillRect(x,y,w,h);
+      ctx.fillStyle=i%3?'#ffbb5319':'#34f1dc27';for(let wy=y+16;wy<326;wy+=21)for(let wx=x+8;wx<x+w-6;wx+=15)if(((wx+wy+i*11)|0)%3)ctx.fillRect(wx,wy,5,8);}
+    // Alley facades
+    ctx.fillStyle='#0b1020';ctx.fillRect(0,209,196,248);ctx.fillRect(804,209,196,248);
+    ctx.fillStyle='#13172a';ctx.fillRect(0,220,183,223);ctx.fillRect(817,220,183,223);
+    ctx.fillStyle='#25213b';ctx.fillRect(0,210,201,15);ctx.fillRect(799,210,201,15);
+    // Windows
+    for(let side=0;side<2;side++){const bx=side?832:23;for(let row=0;row<3;row++)for(let col=0;col<3;col++){ctx.fillStyle=(row+col+side)%3===0?'#ffb84c3b':'#4a529933';ctx.fillRect(bx+col*48,244+row*56,27,37);ctx.fillStyle='#ffffff0b';ctx.fillRect(bx+col*48+3,247+row*56,2,30);}}
+    // Shop fronts and neon signage
+    ctx.fillStyle='#090e19';ctx.fillRect(18,361,165,82);ctx.fillRect(817,361,165,82);
+    ctx.strokeStyle='#39f5df';ctx.lineWidth=2;ctx.shadowBlur=15;ctx.shadowColor='#39f5df';ctx.strokeRect(37,294,115,42);ctx.shadowBlur=0;
+    ctx.fillStyle='#39f5df';ctx.font='bold 16px monospace';ctx.textAlign='center';ctx.fillText(tr('open24'),94,320);
+    ctx.save();ctx.translate(910,326);ctx.rotate(-Math.PI/2);ctx.shadowBlur=14;ctx.shadowColor='#ff3d9a';ctx.fillStyle='#ff3d9a';ctx.font='bold 19px monospace';ctx.fillText('ARCADE',0,0);ctx.restore();ctx.shadowBlur=0;
+    ctx.fillStyle='#241a31';ctx.fillRect(0,418,W,35);ctx.fillStyle='#493044';ctx.fillRect(0,419,W,3);
+    const road=ctx.createLinearGradient(0,437,0,H);road.addColorStop(0,'#211d2b');road.addColorStop(1,'#080d18');ctx.fillStyle=road;ctx.fillRect(0,437,W,H-437);
+    // Road markings, reflections and puddles
+    ctx.strokeStyle='#e7d8d12a';ctx.lineWidth=2;ctx.setLineDash([38,29]);ctx.beginPath();ctx.moveTo(0,513);ctx.lineTo(W,513);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#ff3d9a16';ctx.beginPath();ctx.ellipse(238,485,120,8,-.06,0,Math.PI*2);ctx.fill();ctx.fillStyle='#39f5df18';ctx.beginPath();ctx.ellipse(730,470,100,6,.03,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#ff3d9a40';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(164,451);ctx.lineTo(246,480);ctx.moveTo(850,450);ctx.lineTo(771,472);ctx.stroke();
+    // Wires and rain-like neon glints
+    ctx.strokeStyle='#050711';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,190);ctx.quadraticCurveTo(335,253,585,182);ctx.quadraticCurveTo(810,125,1000,186);ctx.stroke();
+    ctx.strokeStyle='#58608040';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,187);ctx.quadraticCurveTo(335,250,585,179);ctx.quadraticCurveTo(810,122,1000,183);ctx.stroke();
+    ctx.globalAlpha=.16;for(let i=0;i<26;i++){const x=(i*113+Math.floor(elapsed*32))%W,y=(i*61+Math.floor(elapsed*54))%392;ctx.strokeStyle=i%2?'#39f5df':'#ff3d9a';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-5,y+11);ctx.stroke();}ctx.globalAlpha=1;
+  }
+  function drawFighter(f){
+    const floor=FLOOR-f.y;
+    ctx.save();ctx.globalAlpha=f.y>0?.45:1;ctx.fillStyle='#040610';ctx.beginPath();ctx.ellipse(f.x,FLOOR+4,38+Math.max(0,f.y)*.025,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.save();ctx.translate(f.x,floor);ctx.scale(f.facing,1);
+    const bob=isGrounded(f)?Math.sin(f.walk)*1.8:0, hit=f.hitFlash>0;
+    ctx.translate(0,bob);
+    if(!isGrounded(f)&&f.y>20){ctx.strokeStyle=f.accent+'66';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-17,19);ctx.moveTo(5,0);ctx.lineTo(13,22);ctx.stroke();}
+    // Raised stance and clearly visible taekwondo chamber, snap and retraction.
+    const stride=Math.sin(f.walk)*6;
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=12;ctx.strokeStyle=hit?'#fff':f.body;
+    ctx.beginPath();ctx.moveTo(-9,-39);ctx.lineTo(-13+stride,-22);ctx.lineTo(-15+stride,-6);ctx.stroke();
+    ctx.fillStyle=f.skin;ctx.beginPath();ctx.ellipse(-11+stride,-3,14,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#704b40';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-3+stride,-4);ctx.lineTo(0+stride,-3);ctx.moveTo(-7+stride,-6);ctx.lineTo(-5+stride,-4);ctx.stroke();
+    let knee={x:13-stride,y:-22},foot={x:17-stride,y:-6},kickPower=0,prep=0;
+    if(f.attack?.type==='kick'){
+      const a=f.attack,s=ATTACK[a.move],t=a.t;
+      const chamber={frontKick:{k:{x:22,y:-51},f:{x:26,y:-58}},roundhouse:{k:{x:25,y:-68},f:{x:29,y:-75}},sideKick:{k:{x:22,y:-48},f:{x:9,y:-53}}}[a.move];
+      const extended={frontKick:{k:{x:37,y:-51},f:{x:91,y:-55}},roundhouse:{k:{x:48,y:-68},f:{x:96,y:-91}},sideKick:{k:{x:42,y:-49},f:{x:105,y:-53}}}[a.move];
+      const activeEnd=s.startup+s.active;
+      if(t<s.startup){prep=Math.min(1,t/s.startup);}
+      else if(t<activeEnd){prep=1;const q=(t-s.startup)/s.active;kickPower=.36+.64*Math.sin(Math.PI*q);}
+      else{const recover=Math.min(1,(t-activeEnd)/s.recover);prep=1-recover;kickPower=.42*(1-recover);}
+      const blend=(a,b,u)=>a+(b-a)*u;
+      const chamberK={x:blend(13-stride,chamber.k.x,prep),y:blend(-22,chamber.k.y,prep)};
+      const chamberF={x:blend(17-stride,chamber.f.x,prep),y:blend(-6,chamber.f.y,prep)};
+      knee={x:blend(chamberK.x,extended.k.x,kickPower),y:blend(chamberK.y,extended.k.y,kickPower)};
+      foot={x:blend(chamberF.x,extended.f.x,kickPower),y:blend(chamberF.y,extended.f.y,kickPower)};
+    }
+    ctx.strokeStyle=hit?'#fff':f.body;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(10,-40);ctx.lineTo(knee.x,knee.y);ctx.lineTo(foot.x,foot.y);ctx.stroke();
+    ctx.strokeStyle=f.trim;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(knee.x+1,knee.y+2);ctx.lineTo(foot.x-5,foot.y+1);ctx.stroke();
+    ctx.fillStyle=f.trim;ctx.beginPath();ctx.arc(knee.x,knee.y,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=f.skin;ctx.beginPath();ctx.moveTo(foot.x-6,foot.y-4);ctx.lineTo(foot.x+8,foot.y-5);ctx.quadraticCurveTo(foot.x+20,foot.y-3,foot.x+18,foot.y+1);ctx.lineTo(foot.x+11,foot.y+5);ctx.lineTo(foot.x-6,foot.y+4);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=f.accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(foot.x-6,foot.y-4);ctx.lineTo(foot.x+1,foot.y-3);ctx.stroke();
+    ctx.strokeStyle='#704b40';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(foot.x+12,foot.y);ctx.lineTo(foot.x+16,foot.y+1);ctx.moveTo(foot.x+8,foot.y+3);ctx.lineTo(foot.x+11,foot.y+4);ctx.stroke();
+    // Torso and jacket
+    const female=f.gender==='femme',shoulder=female?18:22,waist=female?13:16;
+    ctx.fillStyle=hit?'#fff':f.gi;ctx.beginPath();ctx.moveTo(-shoulder,-82);ctx.quadraticCurveTo(-10,-89,5,-85);ctx.lineTo(shoulder-1,-81);ctx.lineTo(18,-58);ctx.quadraticCurveTo(waist+2,-50,15,-40);ctx.lineTo(-14,-39);ctx.quadraticCurveTo(-20,-50,-19,-59);ctx.closePath();ctx.fill();
+    // Dobok overlap, collar piping and woven fabric folds.
+    ctx.fillStyle='#c7d0d9';ctx.beginPath();ctx.moveTo(-10,-83);ctx.lineTo(-4,-79);ctx.lineTo(0,-66);ctx.lineTo(-5,-58);ctx.lineTo(-15,-76);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#e7ebef';ctx.beginPath();ctx.moveTo(5,-84);ctx.lineTo(-2,-78);ctx.lineTo(0,-67);ctx.lineTo(8,-59);ctx.lineTo(14,-78);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#657180';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,-83);ctx.lineTo(-4,-76);ctx.lineTo(0,-68);ctx.lineTo(7,-76);ctx.lineTo(14,-82);ctx.stroke();
+    ctx.strokeStyle='#b1bbc4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-12,-55);ctx.lineTo(-8,-43);ctx.moveTo(10,-55);ctx.lineTo(7,-43);ctx.moveTo(-11,-79);ctx.lineTo(-14,-70);ctx.stroke();
+    // Coloured belt, central knot and two short hanging ends.
+    ctx.fillStyle=f.belt;ctx.fillRect(-19,-48,38,8);ctx.fillStyle='#111827';ctx.fillRect(-19,-48,38,1.5);ctx.fillRect(-19,-42,38,1.5);
+    ctx.fillStyle=f.belt;ctx.beginPath();ctx.moveTo(1,-47);ctx.lineTo(9,-47);ctx.lineTo(10,-40);ctx.lineTo(5,-37);ctx.lineTo(0,-41);ctx.closePath();ctx.fill();
+    ctx.fillStyle=f.belt;ctx.beginPath();ctx.moveTo(5,-40);ctx.lineTo(11,-40);ctx.lineTo(15,-24);ctx.lineTo(8,-25);ctx.closePath();ctx.fill();
+    ctx.fillStyle=f.accent;ctx.fillRect(9,-28,5,2);
+    // Both fists stay high in a taekwondo guard; padded knuckles and wraps.
+    ctx.strokeStyle=hit?'#fff':f.gi;ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(-13,-76);ctx.lineTo(-25,-86);ctx.lineTo(-20,-99);ctx.stroke();
+    ctx.strokeStyle=f.accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-24,-88);ctx.lineTo(-18,-86);ctx.stroke();
+    ctx.fillStyle=f.skin;ctx.beginPath();ctx.arc(-20,-101,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e4e9ee';ctx.beginPath();ctx.ellipse(-18,-102,7,5,-.2,0,Math.PI*2);ctx.fill();
+    // Head, hair and bandanna
+    ctx.fillStyle=hit?'#fff':f.skin;ctx.beginPath();ctx.ellipse(0,-101,13,15,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=f.hair;
+    if(female){ctx.beginPath();ctx.moveTo(-12,-105);ctx.quadraticCurveTo(-12,-121,5,-118);ctx.quadraticCurveTo(15,-115,13,-101);ctx.lineTo(8,-106);ctx.quadraticCurveTo(1,-111,-9,-105);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-11,-104);ctx.quadraticCurveTo(-20,-95,-16,-80);ctx.quadraticCurveTo(-8,-84,-8,-98);ctx.closePath();ctx.fill();ctx.beginPath();ctx.arc(-16,-91,4,0,Math.PI*2);ctx.fill();}
+    else{ctx.beginPath();ctx.moveTo(-13,-103);ctx.quadraticCurveTo(-11,-120,5,-117);ctx.quadraticCurveTo(14,-115,13,-103);ctx.lineTo(8,-106);ctx.lineTo(-3,-109);ctx.closePath();ctx.fill();}
+    ctx.fillStyle=f.skin;ctx.beginPath();ctx.arc(-12,-99,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#171626';ctx.fillRect(5,-103,3,2);
+    // A jab snaps forward; the cross reaches farther with a slight drop in level.
+    let armX=17,armY=-84,handX=12,handY=-91,punchPower=0;
+    if(f.attack?.type==='punch'){
+      const a=f.attack,s=ATTACK[a.move],t=a.t;
+      if(t<s.startup)punchPower=-.2*(t/s.startup);
+      else if(t<s.startup+s.active){const q=(t-s.startup)/s.active;punchPower=.35+.65*Math.sin(Math.PI*q);}
+      else punchPower=.55*Math.max(0,1-(t-s.startup-s.active)/s.recover);
+      const reach=a.move==='cross'?57:48,drop=a.move==='cross'?7:0;
+      armX=17+punchPower*reach*.52;armY=-84+punchPower*drop;
+      handX=12+punchPower*reach;handY=-91+punchPower*drop;
+    }
+    if(f.guard&&f.playerSide){armX=22;armY=-96;handX=17;handY=-105;}
+    ctx.strokeStyle=hit?'#fff':f.gi;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(13,-76);ctx.lineTo(armX,armY);ctx.lineTo(handX,handY);ctx.stroke();
+    ctx.strokeStyle='#bec7cf';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(15,-73);ctx.lineTo(armX-3,armY-2);ctx.stroke();
+    ctx.strokeStyle=f.accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(armX-4,armY+2);ctx.lineTo(armX+4,armY-2);ctx.stroke();
+    ctx.fillStyle=f.skin;ctx.beginPath();ctx.arc(handX,handY,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e4e9ee';ctx.beginPath();ctx.ellipse(handX+1,handY,7,5,-.2,0,Math.PI*2);ctx.fill();
+    if(f.attack?.type==='kick'&&kickPower>.3){
+      ctx.save();ctx.globalAlpha=Math.min(.8,kickPower*.8);ctx.strokeStyle=f.accent;ctx.lineWidth=f.attack.move==='roundhouse'?7:4;ctx.shadowColor=f.accent;ctx.shadowBlur=12;
+      if(f.attack.move==='roundhouse'){ctx.beginPath();ctx.arc(42,-54,58,-1.35,-.3);ctx.stroke();}
+      else{ctx.beginPath();ctx.moveTo(foot.x-25,foot.y+9);ctx.lineTo(foot.x+3,foot.y+9);ctx.stroke();if(f.attack.move==='sideKick'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(foot.x-17,foot.y+16);ctx.lineTo(foot.x+12,foot.y+16);ctx.stroke();}}
+      ctx.restore();
+    }
+    if(f.invuln>0&&Math.floor(elapsed*32)%2===0){ctx.strokeStyle='#fff9';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-60,33,61,0,0,Math.PI*2);ctx.stroke();}
+    ctx.restore();
+  }
+  function drawBar(x,y,w,h,value,color,label,alignRight=false){
+    ctx.save();ctx.fillStyle='#080b18df';ctx.strokeStyle='#ffffff36';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,w,h,7);ctx.fill();ctx.stroke();
+    const pad=3,bw=Math.max(0,(w-pad*2)*(value/100));ctx.shadowColor=color;ctx.shadowBlur=13;ctx.fillStyle=color;
+    if(alignRight)ctx.beginPath(),ctx.roundRect(x+w-pad-bw,y+pad,bw,h-pad*2,5),ctx.fill();else ctx.beginPath(),ctx.roundRect(x+pad,y+pad,bw,h-pad*2,5),ctx.fill();
+    ctx.shadowBlur=0;ctx.fillStyle='#f5f6ff';ctx.textAlign=alignRight?'right':'left';ctx.font='800 12px system-ui';ctx.fillText(label,alignRight?x+w:x,y-6);ctx.restore();
+  }
+  function hud(){
+    ctx.fillStyle='#080b16d9';ctx.fillRect(0,0,W,76);ctx.strokeStyle='#ffffff20';ctx.beginPath();ctx.moveTo(0,76);ctx.lineTo(W,76);ctx.stroke();
+    drawBar(30,39,328,18,100*player.hp/player.maxHp,'#39f5df',`${player.name.toLocaleUpperCase()} · ${tr(`rank_${player.rank}`)}`);drawBar(642,39,328,18,100*enemy.hp/enemy.maxHp,'#ff3d9a',`${enemy.name} · ${tr(`rank_${enemy.rank}`)}`,true);
+    ctx.textAlign='left';ctx.fillStyle='#9fa8c5';ctx.font='700 10px system-ui';ctx.fillText(`${tr('score')}  ${score.toLocaleString({en:'en-US',fr:'fr-FR',es:'es-ES'}[language])}`,32,26);
+    ctx.textAlign='right';ctx.fillText(combo>1?fmt('comboHits',{combo}):tr('championship'),968,26);
+    const seconds=Math.ceil(timeLeft),clock=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+    ctx.textAlign='center';ctx.fillStyle='#f7f5ff';ctx.font='900 24px ui-monospace,monospace';ctx.fillText(clock,500,51);
+    ctx.fillStyle='#e3a7f1';ctx.font='800 8px system-ui';ctx.fillText(DEMO_MODE?tr('demoHud'):fmt('hudStageRound',{stage,round:roundNumber}),500,65);
+    // Health number on each side
+    ctx.textAlign='left';ctx.fillStyle='#efffff';ctx.font='700 10px system-ui';ctx.fillText(`${Math.ceil(100*player.hp/player.maxHp)}%`,34,70);
+    ctx.textAlign='right';ctx.fillText(`${Math.ceil(100*enemy.hp/enemy.maxHp)}%`,966,70);
+  }
+  function draw(){
+    ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);ctx.clearRect(0,0,W,H);
+    ctx.save();if(shake>0)ctx.translate((rand()-.5)*shake,(rand()-.5)*shake);background();
+    // Fight-zone floor light
+    const glow=ctx.createRadialGradient(500,447,15,500,447,350);glow.addColorStop(0,'#fa3d9b19');glow.addColorStop(1,'#fa3d9b00');ctx.fillStyle=glow;ctx.fillRect(0,395,W,130);
+    drawFighter(player);drawFighter(enemy);
+    for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.shadowColor=p.color;ctx.shadowBlur=12;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;ctx.shadowBlur=0;
+    for(const t of labels){ctx.globalAlpha=Math.min(1,t.life*2);ctx.fillStyle=t.color;ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.shadowColor=t.color;ctx.shadowBlur=12;ctx.fillText(t.text,t.x,t.y);}ctx.globalAlpha=1;ctx.shadowBlur=0;
+    ctx.restore();hud();
+    if(intro>0&&!ended){ctx.globalAlpha=Math.min(1,intro*2);ctx.textAlign='center';ctx.font='1000 40px system-ui';ctx.fillStyle='#f8f5ff';ctx.shadowColor='#39f5df';ctx.shadowBlur=24;ctx.fillText(intro>.55?tr('ready'):tr('fight'),500,282);ctx.shadowBlur=0;ctx.fillStyle='#ffe28b';ctx.font='700 12px system-ui';ctx.fillText(voiceLine,500,311);ctx.globalAlpha=1;}
+    if(player.guard&&!ended){ctx.textAlign='left';ctx.fillStyle='#ffe28b';ctx.font='800 10px system-ui';ctx.fillText(tr('guardUp'),34,92);}
+  }
+  function frame(now){if(gameState!=='fight'||ended){draw();return;}const dt=Math.min(.034,Math.max(0,(now-lastFrame)/1000));lastFrame=now;
+    if(hitStop>0)hitStop=Math.max(0,hitStop-dt);else update(dt);draw();requestAnimationFrame(frame);
+  }
+  Object.assign(player,makeFighter(318,true,{name:'FIGHTER',gender:'homme'}));
+  Object.assign(enemy,makeFighter(690,false,opponents[0]));enemy.hp=enemy.maxHp=92;
+  applyLanguage();
+})();
+</script>
+</body>
+</html>
